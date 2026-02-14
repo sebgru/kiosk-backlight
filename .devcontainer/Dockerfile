@@ -5,6 +5,7 @@ RUN apt-get update \
   bats \
   shellcheck \
   shfmt \
+  vim \
   x11-xserver-utils \
   xprintidle \
   && apt-get clean \
