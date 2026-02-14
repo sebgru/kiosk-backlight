@@ -1,7 +1,5 @@
 # Lightweight kiosk backlight manager
 
-[![GitHub](https://img.shields.io/github/license/sebgru/kiosk-backlight.svg)
-
 A tiny backlight-idle controller for Raspberry Pi / X11 kiosk setups.
 
 It turns the display backlight off after a configurable idle time and turns it back on when user activity resumes.

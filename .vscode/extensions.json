@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format",
+    "mads-hartmann.bash-ide-vscode",
+    "github.vscode-github-actions",
+    "yzhang.markdown-all-in-one",
+    "ms-python.python",
+    "eamodio.gitlens"
+  ]
+}
