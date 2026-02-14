@@ -31,26 +31,38 @@ if [[ -z "${XAUTHORITY:-}" ]]; then
 fi
 export XAUTHORITY="${XAUTHORITY:-}"
 
-command -v xprintidle >/dev/null 2>&1 || { log "ERROR: xprintidle not found"; exit 1; }
-command -v xinput >/dev/null 2>&1 || { log "ERROR: xinput not found"; exit 1; }
-command -v sudo >/dev/null 2>&1 || { log "ERROR: sudo not found"; exit 1; }
+command -v xprintidle >/dev/null 2>&1 || {
+  log "ERROR: xprintidle not found"
+  exit 1
+}
+command -v xinput >/dev/null 2>&1 || {
+  log "ERROR: xinput not found"
+  exit 1
+}
+command -v sudo >/dev/null 2>&1 || {
+  log "ERROR: sudo not found"
+  exit 1
+}
 
 # Find backlight node
 if [[ -z "$BACKLIGHT_BL_POWER" ]]; then
   if [[ -d /sys/class/backlight/rpi_backlight ]]; then
     BACKLIGHT_BL_POWER="/sys/class/backlight/rpi_backlight/bl_power"
   else
-    BL_NODE="$(ls -d /sys/class/backlight/* 2>/dev/null | head -n1 || true)"
+    BL_NODE="$(find /sys/class/backlight -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -n1 || true)"
     [[ -n "$BL_NODE" ]] && BACKLIGHT_BL_POWER="${BL_NODE}/bl_power"
   fi
 fi
-[[ -e "$BACKLIGHT_BL_POWER" ]] || { log "ERROR: BACKLIGHT_BL_POWER not found. Set it in config."; exit 1; }
+[[ -e "$BACKLIGHT_BL_POWER" ]] || {
+  log "ERROR: BACKLIGHT_BL_POWER not found. Set it in config."
+  exit 1
+}
 
 # Capture touch devices once at start (can be overridden by config)
 mapfile -t TOUCH_DEVS < <(xinput list --name-only 2>/dev/null | grep -E "$TOUCH_REGEX" || true)
 
 backlight_off() { echo 1 | sudo tee "$BACKLIGHT_BL_POWER" >/dev/null; }
-backlight_on()  { echo 0 | sudo tee "$BACKLIGHT_BL_POWER" >/dev/null; }
+backlight_on() { echo 0 | sudo tee "$BACKLIGHT_BL_POWER" >/dev/null; }
 
 disable_touch() {
   for d in "${TOUCH_DEVS[@]}"; do xinput disable "$d" 2>/dev/null || true; done
@@ -75,7 +87,7 @@ fi
 
 while true; do
   idle_ms="$(xprintidle || echo 0)"
-  idle_s=$(( idle_ms / 1000 ))
+  idle_s=$((idle_ms / 1000))
 
   if [[ $idle_s -ge $IDLE_LIMIT && "$STATE" != "OFF" ]]; then
     backlight_off

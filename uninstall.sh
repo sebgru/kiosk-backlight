@@ -13,14 +13,30 @@ EOF
 USER_NAME=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --user) USER_NAME="${2:-}"; shift 2 ;;
-    -h|--help) usage; exit 0 ;;
-    *) echo "Unknown arg: $1" >&2; usage; exit 2 ;;
+    --user)
+      USER_NAME="${2:-}"
+      shift 2
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown arg: $1" >&2
+      usage
+      exit 2
+      ;;
   esac
 done
 
-[[ -n "$USER_NAME" ]] || { echo "ERROR: --user is required" >&2; exit 2; }
-[[ "$(id -u)" -eq 0 ]] || { echo "ERROR: run as root (sudo)" >&2; exit 2; }
+[[ -n "$USER_NAME" ]] || {
+  echo "ERROR: --user is required" >&2
+  exit 2
+}
+[[ "$(id -u)" -eq 0 ]] || {
+  echo "ERROR: run as root (sudo)" >&2
+  exit 2
+}
 
 UIDN="$(id -u "$USER_NAME")"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${UIDN}" systemctl --user disable --now kiosk-backlight.service || true

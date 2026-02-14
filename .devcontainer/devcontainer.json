@@ -1,0 +1,31 @@
+{
+  "name": "kiosk-backlight",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.tabSize": 2,
+        "files.eol": "\n",
+        "shellcheck.enable": true,
+        "[shellscript]": {
+          "editor.defaultFormatter": "foxundermoon.shell-format"
+        }
+      },
+      "extensions": [
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format",
+        "mads-hartmann.bash-ide-vscode",
+        "github.vscode-github-actions",
+        "yzhang.markdown-all-in-one",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "postCreateCommand": "shellcheck --version && shfmt --version && bats -v",
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "features": {}
+}

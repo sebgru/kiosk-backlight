@@ -13,17 +13,36 @@ EOF
 USER_NAME=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --user) USER_NAME="${2:-}"; shift 2 ;;
-    -h|--help) usage; exit 0 ;;
-    *) echo "Unknown arg: $1" >&2; usage; exit 2 ;;
+    --user)
+      USER_NAME="${2:-}"
+      shift 2
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown arg: $1" >&2
+      usage
+      exit 2
+      ;;
   esac
 done
 
-[[ -n "$USER_NAME" ]] || { echo "ERROR: --user is required" >&2; exit 2; }
-[[ "$(id -u)" -eq 0 ]] || { echo "ERROR: run as root (sudo)" >&2; exit 2; }
+[[ -n "$USER_NAME" ]] || {
+  echo "ERROR: --user is required" >&2
+  exit 2
+}
+[[ "$(id -u)" -eq 0 ]] || {
+  echo "ERROR: run as root (sudo)" >&2
+  exit 2
+}
 
 USER_HOME="$(getent passwd "$USER_NAME" | cut -d: -f6)"
-[[ -n "$USER_HOME" && -d "$USER_HOME" ]] || { echo "ERROR: user '$USER_NAME' home not found" >&2; exit 2; }
+[[ -n "$USER_HOME" && -d "$USER_HOME" ]] || {
+  echo "ERROR: user '$USER_NAME' home not found" >&2
+  exit 2
+}
 
 echo "[install] Installing runtime deps..."
 apt-get update -y
@@ -50,7 +69,7 @@ chown -R "${USER_NAME}:${USER_NAME}" "${USER_CFG_DIR}/systemd"
 
 echo "[install] Creating sudoers drop-in..."
 SUDOERS_FILE="/etc/sudoers.d/kiosk-backlight"
-cat > "$SUDOERS_FILE" <<EOF
+cat >"$SUDOERS_FILE" <<EOF
 # Allow kiosk-backlight to write backlight power state without password
 ${USER_NAME} ALL=(root) NOPASSWD: /usr/bin/tee /sys/class/backlight/*/bl_power
 EOF
