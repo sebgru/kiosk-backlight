@@ -1,0 +1,41 @@
+# OS / filesystem
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# Python / tooling caches (if you later add tests/tools)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Test / lint outputs
+reports/
+coverage/
+*.lcov
+*.out
+
+# Runtime logs / local debug artifacts
+*.log
+tmp/
+.tmp/
+*.pid
+
+# Local overrides (keep config/kiosk-backlight.env tracked)
+# If you create per-device configs, keep them out of git
+kiosk-backlight.env
+*.local.env
+config/*.local.env
+
+# Archive artifacts
+*.zip
+*.tar
+*.tar.gz
+*.tgz

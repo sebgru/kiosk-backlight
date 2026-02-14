@@ -1,0 +1,22 @@
+# Default: keep LF in repo, avoid CRLF surprises on scripts
+* text=auto eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# systemd unit files
+*.service text eol=lf
+*.timer text eol=lf
+*.target text eol=lf
+
+# Env/config files
+*.env text eol=lf
+
+# Markdown
+*.md text eol=lf
+
+# Treat binary archives as binary (no diff)
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.tgz binary
