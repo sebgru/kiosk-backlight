@@ -63,7 +63,7 @@ sudo ./tools/kiosk-backlight-install-service.sh
 
 ### Update (post-install commands)
 
-`install.sh` exports two commands into `/usr/local/bin`:
+`kiosk-backlight-install-service` creates command links in `/usr/local/bin`:
 
 ```bash
 kiosk-backlight-check-update
@@ -73,7 +73,7 @@ sudo kiosk-backlight-uninstall-service
 ```
 
 - `kiosk-backlight-check-update` checks whether your local branch is behind upstream.
-- `kiosk-backlight-update` does: `git pull --ff-only` and then `uninstall.sh --user <user>` + `install.sh --user <user>`.
+- `kiosk-backlight-update` does: `git pull --ff-only` and then `kiosk-backlight-uninstall-service` + `kiosk-backlight-install-service`.
 
 ### Uninstall
 
