@@ -68,11 +68,23 @@ sudo ./tools/kiosk-backlight-install-service.sh
 
 ### Update (post-install commands)
 
-`kiosk-backlight-install-service` creates command links in `/usr/local/bin`:
+`install.sh` installs repo/update commands into `~/.local/bin`:
 
 ```bash
 kiosk-backlight-check-update
-sudo kiosk-backlight-update
+sudo "$HOME/.local/bin/kiosk-backlight-update"
+```
+
+If `~/.local/bin` is not on your `PATH`, run:
+
+```bash
+"$HOME/.local/bin/kiosk-backlight-check-update"
+sudo "$HOME/.local/bin/kiosk-backlight-update"
+```
+
+`kiosk-backlight-install-service` installs system-service commands into `/usr/local/bin`:
+
+```bash
 sudo kiosk-backlight-install-service
 sudo kiosk-backlight-uninstall-service
 ```

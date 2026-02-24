@@ -30,8 +30,6 @@ rm -f /etc/systemd/system/kiosk-backlight.service
 systemctl daemon-reload
 
 rm -f /usr/local/bin/kiosk-backlight.sh
-rm -f /usr/local/bin/kiosk-backlight-check-update
-rm -f /usr/local/bin/kiosk-backlight-update
 rm -f /usr/local/bin/kiosk-backlight-install-service
 rm -f /usr/local/bin/kiosk-backlight-uninstall-service
 rm -f "$META_FILE"

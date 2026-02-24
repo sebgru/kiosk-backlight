@@ -97,8 +97,6 @@ if [[ ${#missing[@]} -gt 0 ]]; then
 fi
 
 install -m 0755 "$SOURCE_REPO_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
-install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
-install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
 install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/bin/kiosk-backlight-install-service
 install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
 
@@ -122,6 +120,6 @@ systemctl enable --now kiosk-backlight.service
 
 echo "[install-service] Done."
 echo "[install-service] Commands available:"
-echo "  kiosk-backlight-check-update"
-echo "  sudo kiosk-backlight-update"
+echo "  kiosk-backlight.sh"
+echo "  sudo kiosk-backlight-install-service"
 echo "  sudo kiosk-backlight-uninstall-service"
