@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-TOOLS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
-REPO_DIR="$(cd "$TOOLS_DIR/.." && pwd -P)"
-META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-$REPO_DIR/.kiosk-backlight-install.env}"
+META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-/etc/kiosk-backlight-install.env}"
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "Run as root (sudo)" >&2
@@ -20,8 +17,8 @@ fi
 # shellcheck disable=SC1090
 source "$META_FILE"
 
-if [[ -z "${KIOSK_BACKLIGHT_REPO_DIR:-}" || -z "${KIOSK_BACKLIGHT_USER:-}" ]]; then
-  echo "KIOSK_BACKLIGHT_REPO_DIR or KIOSK_BACKLIGHT_USER missing in $META_FILE" >&2
+if [[ -z "${KIOSK_BACKLIGHT_REPO_DIR:-}" ]]; then
+  echo "KIOSK_BACKLIGHT_REPO_DIR missing in $META_FILE" >&2
   exit 2
 fi
 
@@ -56,16 +53,15 @@ if [[ "$local_sha" != "$base_sha" ]]; then
   exit 3
 fi
 
-if command -v runuser >/dev/null 2>&1; then
-  runuser -u "$KIOSK_BACKLIGHT_USER" -- git -C "$KIOSK_BACKLIGHT_REPO_DIR" pull --ff-only
-elif command -v sudo >/dev/null 2>&1; then
-  sudo -u "$KIOSK_BACKLIGHT_USER" git -C "$KIOSK_BACKLIGHT_REPO_DIR" pull --ff-only
+if [[ -n "${KIOSK_BACKLIGHT_REPO_OWNER:-}" ]] && command -v runuser >/dev/null 2>&1; then
+  runuser -u "$KIOSK_BACKLIGHT_REPO_OWNER" -- git -C "$KIOSK_BACKLIGHT_REPO_DIR" pull --ff-only
+elif [[ -n "${KIOSK_BACKLIGHT_REPO_OWNER:-}" ]] && command -v sudo >/dev/null 2>&1; then
+  sudo -u "$KIOSK_BACKLIGHT_REPO_OWNER" git -C "$KIOSK_BACKLIGHT_REPO_DIR" pull --ff-only
 else
-  echo "Neither runuser nor sudo is available to pull as $KIOSK_BACKLIGHT_USER" >&2
-  exit 2
+  git -C "$KIOSK_BACKLIGHT_REPO_DIR" pull --ff-only
 fi
 
-"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" --user "$KIOSK_BACKLIGHT_USER"
-"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-install-service.sh" --user "$KIOSK_BACKLIGHT_USER"
+"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh"
+"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-install-service.sh"
 
 echo "Update applied successfully."

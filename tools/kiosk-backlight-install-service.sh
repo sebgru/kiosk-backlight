@@ -3,21 +3,20 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: sudo kiosk-backlight-install-service [--user <username>]
+Usage: sudo kiosk-backlight-install-service
 
 Installs/updates privileged kiosk-backlight components:
-- /usr/local/bin command links
+- /usr/local/bin command scripts
 - /etc/kiosk-backlight.env (if missing)
-- sudoers drop-in for backlight writes
-- user systemd service enablement
+- /etc/systemd/system/kiosk-backlight.service
+- system service enablement
 EOF
 }
 
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 TOOLS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
 REPO_DIR="$(cd "$TOOLS_DIR/.." && pwd -P)"
-META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-$REPO_DIR/.kiosk-backlight-install.env}"
-USER_NAME=""
+META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-/etc/kiosk-backlight-install.env}"
 SOURCE_REPO_DIR="$REPO_DIR"
 
 validate_repo_layout() {
@@ -34,9 +33,8 @@ write_default_config() {
   local output_file="$1"
   cat >"$output_file" <<'EOF'
 # kiosk-backlight configuration
-# You can put this file in:
-#   /etc/kiosk-backlight.env           (system-wide)
-#   ~/.config/kiosk-backlight.env      (per-user)
+# System-wide config file used by the system service:
+#   /etc/kiosk-backlight.env
 #
 # Idle time in seconds until backlight turns OFF:
 IDLE_LIMIT=20
@@ -52,23 +50,16 @@ WAKE_SWALLOW_MS=250
 EOF
 }
 
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --user)
-      USER_NAME="${2:-}"
-      shift 2
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "Unknown arg: $1" >&2
-      usage
-      exit 2
-      ;;
-  esac
-done
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+if [[ $# -gt 0 ]]; then
+  echo "Unknown arg: $1" >&2
+  usage
+  exit 2
+fi
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "ERROR: run as root (sudo)" >&2
@@ -80,7 +71,7 @@ if [[ -f "$META_FILE" ]]; then
   source "$META_FILE"
 fi
 
-if [[ -n "${KIOSK_BACKLIGHT_REPO_DIR:-}" ]]; then
+if [[ -n "${KIOSK_BACKLIGHT_REPO_DIR:-}" && -d "$KIOSK_BACKLIGHT_REPO_DIR" ]]; then
   SOURCE_REPO_DIR="$KIOSK_BACKLIGHT_REPO_DIR"
 fi
 
@@ -90,20 +81,7 @@ if ! validate_repo_layout "$SOURCE_REPO_DIR"; then
   exit 2
 fi
 
-if [[ -z "$USER_NAME" ]]; then
-  USER_NAME="${KIOSK_BACKLIGHT_USER:-}"
-fi
-
-if [[ -z "$USER_NAME" ]]; then
-  echo "ERROR: --user is required (or metadata must define KIOSK_BACKLIGHT_USER)" >&2
-  exit 2
-fi
-
-USER_HOME="$(getent passwd "$USER_NAME" | cut -d: -f6)"
-if [[ -z "$USER_HOME" || ! -d "$USER_HOME" ]]; then
-  echo "ERROR: user '$USER_NAME' home not found" >&2
-  exit 2
-fi
+REPO_OWNER="${KIOSK_BACKLIGHT_REPO_OWNER:-$(stat -c '%U' "$SOURCE_REPO_DIR")}"
 
 missing=()
 for pkg in evtest git ca-certificates; do
@@ -118,11 +96,11 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   exit 2
 fi
 
-ln -sfn "$SOURCE_REPO_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
-ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
-ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
-ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/bin/kiosk-backlight-install-service
-ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
+install -m 0755 "$SOURCE_REPO_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
+install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
+install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
+install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/bin/kiosk-backlight-install-service
+install -m 0755 "$SOURCE_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
 
 if [[ ! -f /etc/kiosk-backlight.env ]]; then
   if [[ -f "$SOURCE_REPO_DIR/config/kiosk-backlight.env" ]]; then
@@ -133,41 +111,17 @@ if [[ ! -f /etc/kiosk-backlight.env ]]; then
   fi
 fi
 
-USER_CFG_DIR="$USER_HOME/.config"
-mkdir -p "$USER_CFG_DIR"
-if [[ ! -f "$USER_CFG_DIR/kiosk-backlight.env" ]]; then
-  if [[ -f "$SOURCE_REPO_DIR/config/kiosk-backlight.env" ]]; then
-    install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" "$USER_CFG_DIR/kiosk-backlight.env"
-  else
-    write_default_config "$USER_CFG_DIR/kiosk-backlight.env"
-    chmod 0644 "$USER_CFG_DIR/kiosk-backlight.env"
-  fi
-  chown "$USER_NAME:$USER_NAME" "$USER_CFG_DIR/kiosk-backlight.env"
-fi
-
-USER_SYSTEMD_DIR="$USER_CFG_DIR/systemd/user"
-mkdir -p "$USER_SYSTEMD_DIR"
-install -m 0644 "$SOURCE_REPO_DIR/systemd/kiosk-backlight.service" "$USER_SYSTEMD_DIR/kiosk-backlight.service"
-chown -R "$USER_NAME:$USER_NAME" "$USER_CFG_DIR/systemd"
-
-cat >/etc/sudoers.d/kiosk-backlight <<EOF
-# Allow kiosk-backlight to write backlight power state without password
-${USER_NAME} ALL=(root) NOPASSWD: /usr/bin/tee /sys/class/backlight/*/bl_power
-EOF
-chmod 0440 /etc/sudoers.d/kiosk-backlight
+install -m 0644 "$SOURCE_REPO_DIR/systemd/kiosk-backlight.service" /etc/systemd/system/kiosk-backlight.service
 
 printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$SOURCE_REPO_DIR" >"$META_FILE"
-printf 'KIOSK_BACKLIGHT_USER=%q\n' "$USER_NAME" >>"$META_FILE"
-chown "$USER_NAME:$USER_NAME" "$META_FILE"
-chmod 0600 "$META_FILE"
+printf 'KIOSK_BACKLIGHT_REPO_OWNER=%q\n' "$REPO_OWNER" >>"$META_FILE"
+chmod 0644 "$META_FILE"
 
-loginctl enable-linger "$USER_NAME" >/dev/null 2>&1 || true
-uidn="$(id -u "$USER_NAME")"
-sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${uidn}" systemctl --user daemon-reload
-sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${uidn}" systemctl --user enable --now kiosk-backlight.service
+systemctl daemon-reload
+systemctl enable --now kiosk-backlight.service
 
 echo "[install-service] Done."
 echo "[install-service] Commands available:"
 echo "  kiosk-backlight-check-update"
 echo "  sudo kiosk-backlight-update"
-echo "  sudo kiosk-backlight-uninstall-service --user $USER_NAME"
+echo "  sudo kiosk-backlight-uninstall-service"

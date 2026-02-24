@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-TOOLS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
-REPO_DIR="$(cd "$TOOLS_DIR/.." && pwd -P)"
-META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-$REPO_DIR/.kiosk-backlight-install.env}"
+META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-/etc/kiosk-backlight-install.env}"
 
 if [[ ! -f "$META_FILE" ]]; then
   echo "Install metadata not found: $META_FILE" >&2

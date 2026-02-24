@@ -1,7 +1,6 @@
 [Unit]
-Description=Kiosk backlight idle controller
-After=graphical-session.target
-Wants=graphical-session.target
+Description=Kiosk backlight idle controller (evdev + swallow)
+After=multi-user.target
 
 [Service]
 Type=simple
@@ -9,5 +8,10 @@ ExecStart=/usr/local/bin/kiosk-backlight.sh
 Restart=always
 RestartSec=1
 
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

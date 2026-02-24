@@ -12,8 +12,8 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 - Backlight off after idle (uses `/dev/input/event*` activity via `evtest`)
 - Backlight on when activity resumes
 - Optional input swallow window after wake
-- systemd **user** service
-- Configurable via `/etc/kiosk-backlight.env` and/or `~/.config/kiosk-backlight.env`
+- systemd **system** service
+- Configurable via `/etc/kiosk-backlight.env`
 
 ## Requirements
 
@@ -26,7 +26,6 @@ Runtime packages (Debian/Raspberry Pi OS):
 Backlight control:
 
 - needs write access to `/sys/class/backlight/*/bl_power` (or equivalent).
-  The installer can add a sudoers rule allowing passwordless `tee` for this file.
 
 ## Install
 
@@ -46,11 +45,11 @@ curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/insta
 sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
 ```
 
-By default, install uses the current user. To target a specific user explicitly:
+To use a custom repository URL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --user <username>
-sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh --user <username>
+curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --repo-url <repo-url>
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
 ```
 
 Optional installer flags:
@@ -64,7 +63,6 @@ Optional installer flags:
 ```bash
 cd ~/.kiosk-backlight
 git pull
-sudo ./tools/kiosk-backlight-uninstall-service.sh
 sudo ./tools/kiosk-backlight-install-service.sh
 ```
 
@@ -89,6 +87,7 @@ sudo kiosk-backlight-uninstall-service
 ```
 
 Install metadata is stored in the clone directory at `~/.kiosk-backlight/.kiosk-backlight-install.env` and ignored by git.
+System-wide metadata for installed commands is stored at `/etc/kiosk-backlight-install.env`.
 
 ## Dev Container
 
@@ -126,13 +125,11 @@ Defaults live in `config/kiosk-backlight.env`.
 
 At install time, the installer copies defaults to:
 
-- `/etc/kiosk-backlight.env` (system-wide), if not present
-- `~/.config/kiosk-backlight.env` (per-user), if not present
+- `/etc/kiosk-backlight.env` (if not present)
 
 The script loads config in this order (later wins):
 
 1. `/etc/kiosk-backlight.env`
-2. `~/.config/kiosk-backlight.env`
 
 Common settings:
 
@@ -144,8 +141,8 @@ Common settings:
 After editing config:
 
 ```bash
-systemctl --user daemon-reload
-systemctl --user restart kiosk-backlight.service
+sudo systemctl daemon-reload
+sudo systemctl restart kiosk-backlight.service
 ```
 
 ## Troubleshooting
@@ -153,7 +150,7 @@ systemctl --user restart kiosk-backlight.service
 Check logs:
 
 ```bash
-journalctl --user -u kiosk-backlight.service -b --no-pager
+sudo journalctl -u kiosk-backlight.service -b --no-pager
 ```
 
 Find backlight device:

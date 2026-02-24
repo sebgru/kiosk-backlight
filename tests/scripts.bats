@@ -19,7 +19,7 @@ setup() {
 }
 
 @test "install.sh rejects empty repo-url" {
-  run /usr/bin/bash "$PROJECT_ROOT/install.sh" --user test --repo-url ""
+  run /usr/bin/bash "$PROJECT_ROOT/install.sh" --repo-url ""
 
   [ "$status" -eq 2 ]
   [[ "$output" == *"--repo-url cannot be empty"* ]]
@@ -47,14 +47,14 @@ setup() {
 }
 
 @test "kiosk-backlight-install-service requires root" {
-  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-service.sh" --user "$USER"
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-service.sh"
 
   [ "$status" -eq 2 ]
   [[ "$output" == *"run as root"* ]]
 }
 
 @test "kiosk-backlight-uninstall-service requires root" {
-  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-service.sh" --user "$USER"
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-service.sh"
 
   [ "$status" -eq 2 ]
   [[ "$output" == *"run as root"* ]]
@@ -84,7 +84,7 @@ setup() {
   meta_file="$tmpdir/install-meta.env"
   cat >"$meta_file" <<EOF
 KIOSK_BACKLIGHT_REPO_DIR=$PROJECT_ROOT
-KIOSK_BACKLIGHT_USER=$USER
+KIOSK_BACKLIGHT_REPO_OWNER=$USER
 EOF
 
   run env KIOSK_BACKLIGHT_INSTALL_META="$meta_file" \
@@ -113,7 +113,7 @@ EOF
 
   cat >"$meta_file" <<EOF
 KIOSK_BACKLIGHT_REPO_DIR=$local_repo
-KIOSK_BACKLIGHT_USER=$USER
+KIOSK_BACKLIGHT_REPO_OWNER=$USER
 EOF
 
   run env KIOSK_BACKLIGHT_INSTALL_META="$meta_file" \
@@ -169,7 +169,7 @@ EOF
 
   cat >"$meta_file" <<EOF
 KIOSK_BACKLIGHT_REPO_DIR=$local_repo
-KIOSK_BACKLIGHT_USER=$USER
+KIOSK_BACKLIGHT_REPO_OWNER=$USER
 EOF
 
   run env KIOSK_BACKLIGHT_INSTALL_META="$meta_file" \

@@ -2,14 +2,9 @@
 set -euo pipefail
 
 CFG_SYSTEM="/etc/kiosk-backlight.env"
-CFG_USER="${XDG_CONFIG_HOME:-$HOME/.config}/kiosk-backlight.env"
 if [[ -f "$CFG_SYSTEM" ]]; then
   # shellcheck disable=SC1090
   source "$CFG_SYSTEM"
-fi
-if [[ -f "$CFG_USER" ]]; then
-  # shellcheck disable=SC1090
-  source "$CFG_USER"
 fi
 
 IDLE_LIMIT="${IDLE_LIMIT:-20}"
