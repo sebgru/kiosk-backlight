@@ -26,13 +26,19 @@ Backlight control:
 - needs write access to `/sys/class/backlight/*/bl_power` (or equivalent).
   The installer can add a sudoers rule allowing passwordless `tee` for this file.
 
-## Install (Phase 1)
+## Install
+
+The installer clones/updates the repo automatically (no pre-clone required):
 
 ```bash
-git clone <YOUR_PRIVATE_REPO_URL> kiosk-backlight
-cd kiosk-backlight
-sudo ./install.sh --user ha
+curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | sudo bash -s -- --user ha
 ```
+
+Optional installer flags:
+
+- `--repo-url <url>`
+- `--branch <name>`
+- `--clone-dir <path>` (default: `~/.kiosk-backlight`)
 
 ### Update (manual)
 

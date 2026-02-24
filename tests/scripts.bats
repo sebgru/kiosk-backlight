@@ -18,6 +18,13 @@ setup() {
   [[ "$output" == *"Unknown arg: --nope"* ]]
 }
 
+@test "install.sh rejects empty repo-url" {
+  run /usr/bin/bash "$PROJECT_ROOT/install.sh" --user test --repo-url ""
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--repo-url cannot be empty"* ]]
+}
+
 @test "uninstall.sh shows help" {
   run /usr/bin/bash "$PROJECT_ROOT/uninstall.sh" --help
 
