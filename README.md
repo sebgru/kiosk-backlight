@@ -1,6 +1,6 @@
 # Lightweight kiosk backlight manager
 
-A tiny backlight-idle controller for Raspberry Pi / X11 kiosk setups.
+A tiny backlight-idle controller for Raspberry Pi kiosk setups.
 
 It turns the display backlight off after a configurable idle time and turns it back on when user activity resumes.
 Optionally, it can **swallow the first touch after wake** by temporarily disabling touch input for a short period.
@@ -9,9 +9,9 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 
 ## Features
 
-- Backlight off after idle (uses `xprintidle`)
+- Backlight off after idle (uses `/dev/input/event*` activity via `evtest`)
 - Backlight on when activity resumes
-- Optional "first tap wakes only" (disables touch briefly on wake)
+- Optional input swallow window after wake
 - systemd **user** service
 - Configurable via `/etc/kiosk-backlight.env` and/or `~/.config/kiosk-backlight.env`
 
@@ -19,9 +19,7 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 
 Runtime packages (Debian/Raspberry Pi OS):
 
-- `xprintidle`
-- `xinput` (provided by `x11-xserver-utils`)
-- X11 running (DISPLAY like `:0`)
+- `evtest`
 
 Backlight control:
 
@@ -36,13 +34,25 @@ cd kiosk-backlight
 sudo ./install.sh --user ha
 ```
 
-### Update
+### Update (manual)
 
 ```bash
 cd kiosk-backlight
 git pull
 sudo ./install.sh --user ha
 ```
+
+### Update (post-install commands)
+
+`install.sh` exports two commands into `/usr/local/bin`:
+
+```bash
+kiosk-backlight-check-update
+sudo kiosk-backlight-update
+```
+
+- `kiosk-backlight-check-update` checks whether your local branch is behind upstream.
+- `kiosk-backlight-update` does: `git pull --ff-only` and then `uninstall.sh --user <user>` + `install.sh --user <user>`.
 
 ### Uninstall
 
@@ -97,11 +107,9 @@ The script loads config in this order (later wins):
 Common settings:
 
 - `IDLE_LIMIT=20` (seconds)
-- `WAKE_SUPPRESS_MS=200` (milliseconds; swallow first touch after wake)
+- `WAKE_SWALLOW_MS=250` (milliseconds)
 - `POLL_INTERVAL=1` (seconds)
 - `BACKLIGHT_BL_POWER=/sys/class/backlight/.../bl_power` (optional override)
-- `TOUCH_REGEX=touch|Touch|FT5406|ADS7846` (regex to match touch device names)
-- `DISABLE_TOUCH_ON_WAKE=1` (0/1)
 
 After editing config:
 
@@ -127,7 +135,7 @@ ls -d /sys/class/backlight/*
 List input devices:
 
 ```bash
-xinput list --name-only
+ls -1 /dev/input/event*
 ```
 
 ## License

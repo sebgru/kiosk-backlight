@@ -9,9 +9,5 @@ ExecStart=/usr/local/bin/kiosk-backlight.sh
 Restart=always
 RestartSec=1
 
-# These environment variables are used if present; the script also tries to infer DISPLAY/XAUTHORITY.
-Environment=DISPLAY=:0
-Environment=XAUTHORITY=%h/.Xauthority
-
 [Install]
 WantedBy=default.target

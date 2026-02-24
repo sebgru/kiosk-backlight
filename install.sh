@@ -29,6 +29,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
 [[ -n "$USER_NAME" ]] || {
   echo "ERROR: --user is required" >&2
   exit 2
@@ -46,26 +48,33 @@ USER_HOME="$(getent passwd "$USER_NAME" | cut -d: -f6)"
 
 echo "[install] Installing runtime deps..."
 apt-get update -y
-apt-get install -y --no-install-recommends xprintidle x11-xserver-utils
+apt-get install -y --no-install-recommends evtest
 
 echo "[install] Installing script..."
-install -m 0755 kiosk-backlight.sh /usr/local/bin/kiosk-backlight.sh
+install -m 0755 "$SCRIPT_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
+install -m 0755 "$SCRIPT_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
+install -m 0755 "$SCRIPT_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
 
 echo "[install] Installing default config if missing..."
-[[ -f /etc/kiosk-backlight.env ]] || install -m 0644 config/kiosk-backlight.env /etc/kiosk-backlight.env
+[[ -f /etc/kiosk-backlight.env ]] || install -m 0644 "$SCRIPT_DIR/config/kiosk-backlight.env" /etc/kiosk-backlight.env
 
 USER_CFG_DIR="${USER_HOME}/.config"
 mkdir -p "$USER_CFG_DIR"
 if [[ ! -f "${USER_CFG_DIR}/kiosk-backlight.env" ]]; then
-  install -m 0644 config/kiosk-backlight.env "${USER_CFG_DIR}/kiosk-backlight.env"
+  install -m 0644 "$SCRIPT_DIR/config/kiosk-backlight.env" "${USER_CFG_DIR}/kiosk-backlight.env"
   chown "${USER_NAME}:${USER_NAME}" "${USER_CFG_DIR}/kiosk-backlight.env"
 fi
 
 echo "[install] Installing systemd user service..."
 USER_SYSTEMD_DIR="${USER_CFG_DIR}/systemd/user"
 mkdir -p "$USER_SYSTEMD_DIR"
-install -m 0644 systemd/kiosk-backlight.service "${USER_SYSTEMD_DIR}/kiosk-backlight.service"
+install -m 0644 "$SCRIPT_DIR/systemd/kiosk-backlight.service" "${USER_SYSTEMD_DIR}/kiosk-backlight.service"
 chown -R "${USER_NAME}:${USER_NAME}" "${USER_CFG_DIR}/systemd"
+
+META_FILE="/etc/kiosk-backlight-install.env"
+printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$SCRIPT_DIR" >"$META_FILE"
+printf 'KIOSK_BACKLIGHT_USER=%q\n' "$USER_NAME" >>"$META_FILE"
+chmod 0644 "$META_FILE"
 
 echo "[install] Creating sudoers drop-in..."
 SUDOERS_FILE="/etc/sudoers.d/kiosk-backlight"
@@ -82,3 +91,6 @@ sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${UIDN}" systemctl --user daemon
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${UIDN}" systemctl --user enable --now kiosk-backlight.service
 
 echo "[install] Done."
+echo "[install] Update commands available:"
+echo "  kiosk-backlight-check-update"
+echo "  sudo kiosk-backlight-update"

@@ -42,8 +42,11 @@ UIDN="$(id -u "$USER_NAME")"
 sudo -u "$USER_NAME" XDG_RUNTIME_DIR="/run/user/${UIDN}" systemctl --user disable --now kiosk-backlight.service || true
 
 rm -f /usr/local/bin/kiosk-backlight.sh
+rm -f /usr/local/bin/kiosk-backlight-check-update
+rm -f /usr/local/bin/kiosk-backlight-update
 rm -f "/home/${USER_NAME}/.config/systemd/user/kiosk-backlight.service"
 rm -f /etc/sudoers.d/kiosk-backlight
+rm -f /etc/kiosk-backlight-install.env
 
 echo "[uninstall] Kept config files:"
 echo "  /etc/kiosk-backlight.env"
