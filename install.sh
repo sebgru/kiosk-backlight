@@ -14,7 +14,7 @@ EOF
 USER_NAME="${USER:-$(id -un)}"
 DEFAULT_REPO_URL="https://github.com/sebgru/kiosk-backlight.git"
 REPO_URL="${KIOSK_BACKLIGHT_REPO_URL:-$DEFAULT_REPO_URL}"
-REPO_BRANCH="${KIOSK_BACKLIGHT_REPO_BRANCH:-}"
+REPO_BRANCH="${KIOSK_BACKLIGHT_REPO_BRANCH:-master}"
 CLONE_DIR="${KIOSK_BACKLIGHT_CLONE_DIR:-}"
 while [[ $# -gt 0 ]]; do
   case "$1" in

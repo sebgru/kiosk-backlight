@@ -39,6 +39,13 @@ curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/insta
 sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
 ```
 
+If your repository default branch differs, pin the bootstrap branch explicitly:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --branch master
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
+```
+
 By default, install uses the current user. To target a specific user explicitly:
 
 ```bash
@@ -49,7 +56,7 @@ sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh --user <usernam
 Optional installer flags:
 
 - `--repo-url <url>`
-- `--branch <name>`
+- `--branch <name>` (default: `master`)
 - `--clone-dir <path>` (default: `~/.kiosk-backlight`)
 
 ### Update (manual)
