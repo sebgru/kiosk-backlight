@@ -74,7 +74,6 @@ bootstrap_repo() {
 validate_repo_layout() {
   local repo_dir="$1"
   [[ -f "$repo_dir/kiosk-backlight.sh" ]] &&
-    [[ -f "$repo_dir/config/kiosk-backlight.env" ]] &&
     [[ -f "$repo_dir/systemd/kiosk-backlight.service" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&

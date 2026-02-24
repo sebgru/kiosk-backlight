@@ -33,6 +33,7 @@ tmp/
 # Local overrides (keep config/kiosk-backlight.env tracked)
 # If you create per-device configs, keep them out of git
 kiosk-backlight.env
+!config/kiosk-backlight.env
 *.local.env
 config/*.local.env
 

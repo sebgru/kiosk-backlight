@@ -23,12 +23,33 @@ SOURCE_REPO_DIR="$REPO_DIR"
 validate_repo_layout() {
   local repo_dir="$1"
   [[ -f "$repo_dir/kiosk-backlight.sh" ]] &&
-    [[ -f "$repo_dir/config/kiosk-backlight.env" ]] &&
     [[ -f "$repo_dir/systemd/kiosk-backlight.service" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-install-service.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]]
+}
+
+write_default_config() {
+  local output_file="$1"
+  cat >"$output_file" <<'EOF'
+# kiosk-backlight configuration
+# You can put this file in:
+#   /etc/kiosk-backlight.env           (system-wide)
+#   ~/.config/kiosk-backlight.env      (per-user)
+#
+# Idle time in seconds until backlight turns OFF:
+IDLE_LIMIT=20
+
+# How often to poll for idle timeout checks (seconds):
+POLL_INTERVAL=1
+
+# How long to swallow input after wake (milliseconds):
+WAKE_SWALLOW_MS=250
+
+# Optional: explicitly set the backlight bl_power node:
+# BACKLIGHT_BL_POWER=/sys/class/backlight/rpi_backlight/bl_power
+EOF
 }
 
 while [[ $# -gt 0 ]]; do
@@ -104,13 +125,23 @@ ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/b
 ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
 
 if [[ ! -f /etc/kiosk-backlight.env ]]; then
-  install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" /etc/kiosk-backlight.env
+  if [[ -f "$SOURCE_REPO_DIR/config/kiosk-backlight.env" ]]; then
+    install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" /etc/kiosk-backlight.env
+  else
+    write_default_config /etc/kiosk-backlight.env
+    chmod 0644 /etc/kiosk-backlight.env
+  fi
 fi
 
 USER_CFG_DIR="$USER_HOME/.config"
 mkdir -p "$USER_CFG_DIR"
 if [[ ! -f "$USER_CFG_DIR/kiosk-backlight.env" ]]; then
-  install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" "$USER_CFG_DIR/kiosk-backlight.env"
+  if [[ -f "$SOURCE_REPO_DIR/config/kiosk-backlight.env" ]]; then
+    install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" "$USER_CFG_DIR/kiosk-backlight.env"
+  else
+    write_default_config "$USER_CFG_DIR/kiosk-backlight.env"
+    chmod 0644 "$USER_CFG_DIR/kiosk-backlight.env"
+  fi
   chown "$USER_NAME:$USER_NAME" "$USER_CFG_DIR/kiosk-backlight.env"
 fi
 
