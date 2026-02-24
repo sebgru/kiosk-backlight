@@ -71,6 +71,17 @@ bootstrap_repo() {
   fi
 }
 
+validate_repo_layout() {
+  local repo_dir="$1"
+  [[ -f "$repo_dir/kiosk-backlight.sh" ]] &&
+    [[ -f "$repo_dir/config/kiosk-backlight.env" ]] &&
+    [[ -f "$repo_dir/systemd/kiosk-backlight.service" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-install-service.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]]
+}
+
 check_required_packages() {
   local missing=()
   local pkg
@@ -125,6 +136,12 @@ check_required_packages
 
 bootstrap_repo
 SOURCE_DIR="$CLONE_DIR"
+
+if ! validate_repo_layout "$SOURCE_DIR"; then
+  echo "ERROR: cloned repository layout is incomplete at $SOURCE_DIR" >&2
+  echo "Ensure --repo-url points to the kiosk-backlight repository and retry." >&2
+  exit 2
+fi
 
 META_FILE="$SOURCE_DIR/.kiosk-backlight-install.env"
 printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$SOURCE_DIR" >"$META_FILE"

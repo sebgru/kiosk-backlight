@@ -18,6 +18,18 @@ TOOLS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
 REPO_DIR="$(cd "$TOOLS_DIR/.." && pwd -P)"
 META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-$REPO_DIR/.kiosk-backlight-install.env}"
 USER_NAME=""
+SOURCE_REPO_DIR="$REPO_DIR"
+
+validate_repo_layout() {
+  local repo_dir="$1"
+  [[ -f "$repo_dir/kiosk-backlight.sh" ]] &&
+    [[ -f "$repo_dir/config/kiosk-backlight.env" ]] &&
+    [[ -f "$repo_dir/systemd/kiosk-backlight.service" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-install-service.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]]
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -45,6 +57,16 @@ fi
 if [[ -f "$META_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$META_FILE"
+fi
+
+if [[ -n "${KIOSK_BACKLIGHT_REPO_DIR:-}" ]]; then
+  SOURCE_REPO_DIR="$KIOSK_BACKLIGHT_REPO_DIR"
+fi
+
+if ! validate_repo_layout "$SOURCE_REPO_DIR"; then
+  echo "ERROR: kiosk-backlight repository layout not found at $SOURCE_REPO_DIR" >&2
+  echo "Re-run install.sh to refresh the clone, then retry." >&2
+  exit 2
 fi
 
 if [[ -z "$USER_NAME" ]]; then
@@ -75,26 +97,26 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   exit 2
 fi
 
-ln -sfn "$REPO_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
-ln -sfn "$REPO_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
-ln -sfn "$REPO_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
-ln -sfn "$REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/bin/kiosk-backlight-install-service
-ln -sfn "$REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
+ln -sfn "$SOURCE_REPO_DIR/kiosk-backlight.sh" /usr/local/bin/kiosk-backlight.sh
+ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-check-update.sh" /usr/local/bin/kiosk-backlight-check-update
+ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-update.sh" /usr/local/bin/kiosk-backlight-update
+ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-install-service.sh" /usr/local/bin/kiosk-backlight-install-service
+ln -sfn "$SOURCE_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" /usr/local/bin/kiosk-backlight-uninstall-service
 
 if [[ ! -f /etc/kiosk-backlight.env ]]; then
-  install -m 0644 "$REPO_DIR/config/kiosk-backlight.env" /etc/kiosk-backlight.env
+  install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" /etc/kiosk-backlight.env
 fi
 
 USER_CFG_DIR="$USER_HOME/.config"
 mkdir -p "$USER_CFG_DIR"
 if [[ ! -f "$USER_CFG_DIR/kiosk-backlight.env" ]]; then
-  install -m 0644 "$REPO_DIR/config/kiosk-backlight.env" "$USER_CFG_DIR/kiosk-backlight.env"
+  install -m 0644 "$SOURCE_REPO_DIR/config/kiosk-backlight.env" "$USER_CFG_DIR/kiosk-backlight.env"
   chown "$USER_NAME:$USER_NAME" "$USER_CFG_DIR/kiosk-backlight.env"
 fi
 
 USER_SYSTEMD_DIR="$USER_CFG_DIR/systemd/user"
 mkdir -p "$USER_SYSTEMD_DIR"
-install -m 0644 "$REPO_DIR/systemd/kiosk-backlight.service" "$USER_SYSTEMD_DIR/kiosk-backlight.service"
+install -m 0644 "$SOURCE_REPO_DIR/systemd/kiosk-backlight.service" "$USER_SYSTEMD_DIR/kiosk-backlight.service"
 chown -R "$USER_NAME:$USER_NAME" "$USER_CFG_DIR/systemd"
 
 cat >/etc/sudoers.d/kiosk-backlight <<EOF
@@ -103,7 +125,7 @@ ${USER_NAME} ALL=(root) NOPASSWD: /usr/bin/tee /sys/class/backlight/*/bl_power
 EOF
 chmod 0440 /etc/sudoers.d/kiosk-backlight
 
-printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$REPO_DIR" >"$META_FILE"
+printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$SOURCE_REPO_DIR" >"$META_FILE"
 printf 'KIOSK_BACKLIGHT_USER=%q\n' "$USER_NAME" >>"$META_FILE"
 chown "$USER_NAME:$USER_NAME" "$META_FILE"
 chmod 0600 "$META_FILE"
