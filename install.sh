@@ -73,7 +73,9 @@ validate_repo_layout() {
     [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-install-service.sh" ]] &&
-    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]]
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-install-tools.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-tools.sh" ]]
 }
 
 check_required_packages() {
@@ -91,13 +93,6 @@ check_required_packages() {
     echo "  sudo apt-get update && sudo apt-get install -y ${missing[*]}" >&2
     exit 2
   fi
-}
-
-install_user_tools() {
-  local bindir="$USER_HOME/.local/bin"
-  mkdir -p "$bindir"
-  ln -sfn "$SOURCE_DIR/tools/kiosk-backlight-check-update.sh" "$bindir/kiosk-backlight-check-update"
-  ln -sfn "$SOURCE_DIR/tools/kiosk-backlight-update.sh" "$bindir/kiosk-backlight-update"
 }
 
 [[ -n "$REPO_URL" ]] || {
@@ -141,15 +136,8 @@ printf 'KIOSK_BACKLIGHT_REPO_DIR=%q\n' "$SOURCE_DIR" >"$META_FILE"
 printf 'KIOSK_BACKLIGHT_REPO_OWNER=%q\n' "$USER_NAME" >>"$META_FILE"
 chmod 0600 "$META_FILE"
 
-install_user_tools
-
 echo "[install] Done."
 echo "[install] Repo location: $SOURCE_DIR"
-echo "[install] User commands installed in: $USER_HOME/.local/bin"
-echo "  kiosk-backlight-check-update"
-echo "  kiosk-backlight-update"
-if [[ ":$PATH:" != *":$USER_HOME/.local/bin:"* ]]; then
-  echo "[install] Note: add $USER_HOME/.local/bin to PATH to use these commands globally."
-fi
-echo "[install] Next step (requires sudo):"
-echo "  sudo $SOURCE_DIR/tools/kiosk-backlight-install-service.sh"
+echo "[install] Next steps (require sudo):"
+echo "  sudo $SOURCE_DIR/tools/kiosk-backlight-install-tools.sh"
+echo "  sudo kiosk-backlight-install-service"
