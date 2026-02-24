@@ -60,6 +60,34 @@ setup() {
   [[ "$output" == *"run as root"* ]]
 }
 
+@test "kiosk-backlight-install-tools shows help" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-tools.sh" --help
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: sudo kiosk-backlight-install-tools"* ]]
+}
+
+@test "kiosk-backlight-uninstall-tools shows help" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-tools.sh" --help
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: sudo kiosk-backlight-uninstall-tools"* ]]
+}
+
+@test "kiosk-backlight-install-tools requires root" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-tools.sh"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"run as root"* ]]
+}
+
+@test "kiosk-backlight-uninstall-tools requires root" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-tools.sh"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"run as root"* ]]
+}
+
 @test "kiosk-backlight.sh fails fast when evtest is missing" {
   tmpbin="$(mktemp -d)"
   mkdir -p "$BATS_TEST_TMPDIR/home"

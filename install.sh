@@ -73,7 +73,9 @@ validate_repo_layout() {
     [[ -f "$repo_dir/tools/kiosk-backlight-check-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-update.sh" ]] &&
     [[ -f "$repo_dir/tools/kiosk-backlight-install-service.sh" ]] &&
-    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]]
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-service.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-install-tools.sh" ]] &&
+    [[ -f "$repo_dir/tools/kiosk-backlight-uninstall-tools.sh" ]]
 }
 
 check_required_packages() {
@@ -136,5 +138,6 @@ chmod 0600 "$META_FILE"
 
 echo "[install] Done."
 echo "[install] Repo location: $SOURCE_DIR"
-echo "[install] Next step (requires sudo):"
-echo "  sudo $SOURCE_DIR/tools/kiosk-backlight-install-service.sh"
+echo "[install] Next steps (require sudo):"
+echo "  sudo $SOURCE_DIR/tools/kiosk-backlight-install-tools.sh"
+echo "  sudo kiosk-backlight-install-service"

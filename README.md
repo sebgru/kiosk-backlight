@@ -29,27 +29,34 @@ Backlight control:
 
 ## Install
 
-The installer clones/updates the repo automatically (no pre-clone required):
+Install is split into three steps:
+
+1. **Bootstrap** (non-root) — clones the repo and writes local metadata.
+2. **Install tools** (sudo) — copies all scripts to `/usr/local/bin` and writes system metadata.
+3. **Install service** (sudo) — installs and enables the systemd service.
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y evtest git ca-certificates
 curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash
-sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-tools.sh
+sudo kiosk-backlight-install-service
 ```
 
 If your repository default branch differs, pin the bootstrap branch explicitly:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --branch master
-sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-tools.sh
+sudo kiosk-backlight-install-service
 ```
 
 To use a custom repository URL:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --repo-url <repo-url>
-sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-tools.sh
+sudo kiosk-backlight-install-service
 ```
 
 Optional installer flags:
@@ -63,27 +70,34 @@ Optional installer flags:
 ```bash
 cd ~/.kiosk-backlight
 git pull
-sudo ./tools/kiosk-backlight-install-service.sh
+sudo kiosk-backlight-uninstall-service
+sudo kiosk-backlight-install-tools
+sudo kiosk-backlight-install-service
 ```
 
-### Update (post-install commands)
+### Update (via installed command)
 
-`kiosk-backlight-install-service` creates command links in `/usr/local/bin`:
+`kiosk-backlight-install-tools` places all management commands in `/usr/local/bin`:
 
 ```bash
 kiosk-backlight-check-update
 sudo kiosk-backlight-update
-sudo kiosk-backlight-install-service
-sudo kiosk-backlight-uninstall-service
 ```
 
 - `kiosk-backlight-check-update` checks whether your local branch is behind upstream.
-- `kiosk-backlight-update` does: `git pull --ff-only` and then `kiosk-backlight-uninstall-service` + `kiosk-backlight-install-service`.
+- `kiosk-backlight-update` does: `git pull --ff-only`, then `kiosk-backlight-uninstall-service` + `kiosk-backlight-install-tools` + `kiosk-backlight-install-service`.
 
 ### Uninstall
 
 ```bash
 sudo kiosk-backlight-uninstall-service
+sudo kiosk-backlight-uninstall-tools
+```
+
+Or using the convenience wrapper:
+
+```bash
+sudo ~/.kiosk-backlight/uninstall.sh
 ```
 
 Install metadata is stored in the clone directory at `~/.kiosk-backlight/.kiosk-backlight-install.env` and ignored by git.

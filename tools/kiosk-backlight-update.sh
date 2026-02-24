@@ -62,6 +62,7 @@ else
 fi
 
 "$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh"
+"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-install-tools.sh"
 "$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-install-service.sh"
 
 echo "Update applied successfully."
