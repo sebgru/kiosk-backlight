@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-/etc/kiosk-backlight-install.env}"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+TOOLS_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd -P)"
+REPO_DIR="$(cd "$TOOLS_DIR/.." && pwd -P)"
+META_FILE="${KIOSK_BACKLIGHT_INSTALL_META:-$REPO_DIR/.kiosk-backlight-install.env}"
 
 if [[ "$(id -u)" -ne 0 ]]; then
   echo "Run as root (sudo)" >&2
@@ -62,7 +65,7 @@ else
   exit 2
 fi
 
-"$KIOSK_BACKLIGHT_REPO_DIR/uninstall.sh" --user "$KIOSK_BACKLIGHT_USER"
-"$KIOSK_BACKLIGHT_REPO_DIR/install.sh" --user "$KIOSK_BACKLIGHT_USER"
+"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-uninstall-service.sh" --user "$KIOSK_BACKLIGHT_USER"
+"$KIOSK_BACKLIGHT_REPO_DIR/tools/kiosk-backlight-install-service.sh" --user "$KIOSK_BACKLIGHT_USER"
 
 echo "Update applied successfully."

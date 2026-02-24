@@ -8,7 +8,7 @@ setup() {
   run /usr/bin/bash "$PROJECT_ROOT/install.sh" --help
 
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Usage: sudo ./install.sh --user <username>"* ]]
+  [[ "$output" == *"Usage: ./install.sh"* ]]
 }
 
 @test "install.sh rejects unknown argument" {
@@ -29,7 +29,35 @@ setup() {
   run /usr/bin/bash "$PROJECT_ROOT/uninstall.sh" --help
 
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Usage: sudo ./uninstall.sh --user <username>"* ]]
+  [[ "$output" == *"Usage: sudo kiosk-backlight-uninstall-service"* ]]
+}
+
+@test "kiosk-backlight-install-service shows help" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-service.sh" --help
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: sudo kiosk-backlight-install-service"* ]]
+}
+
+@test "kiosk-backlight-uninstall-service shows help" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-service.sh" --help
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage: sudo kiosk-backlight-uninstall-service"* ]]
+}
+
+@test "kiosk-backlight-install-service requires root" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-install-service.sh" --user "$USER"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"run as root"* ]]
+}
+
+@test "kiosk-backlight-uninstall-service requires root" {
+  run /usr/bin/bash "$PROJECT_ROOT/tools/kiosk-backlight-uninstall-service.sh" --user "$USER"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"run as root"* ]]
 }
 
 @test "kiosk-backlight.sh fails fast when evtest is missing" {

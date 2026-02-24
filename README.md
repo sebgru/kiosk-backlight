@@ -20,6 +20,8 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 Runtime packages (Debian/Raspberry Pi OS):
 
 - `evtest`
+- `git`
+- `ca-certificates` (for HTTPS git clones)
 
 Backlight control:
 
@@ -31,7 +33,17 @@ Backlight control:
 The installer clones/updates the repo automatically (no pre-clone required):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | sudo bash -s -- --user ha
+sudo apt-get update
+sudo apt-get install -y evtest git ca-certificates
+curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh
+```
+
+By default, install uses the current user. To target a specific user explicitly:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash -s -- --user <username>
+sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-service.sh --user <username>
 ```
 
 Optional installer flags:
@@ -43,9 +55,10 @@ Optional installer flags:
 ### Update (manual)
 
 ```bash
-cd kiosk-backlight
+cd ~/.kiosk-backlight
 git pull
-sudo ./install.sh --user ha
+sudo ./tools/kiosk-backlight-uninstall-service.sh
+sudo ./tools/kiosk-backlight-install-service.sh
 ```
 
 ### Update (post-install commands)
@@ -55,6 +68,8 @@ sudo ./install.sh --user ha
 ```bash
 kiosk-backlight-check-update
 sudo kiosk-backlight-update
+sudo kiosk-backlight-install-service
+sudo kiosk-backlight-uninstall-service
 ```
 
 - `kiosk-backlight-check-update` checks whether your local branch is behind upstream.
@@ -63,8 +78,10 @@ sudo kiosk-backlight-update
 ### Uninstall
 
 ```bash
-sudo ./uninstall.sh --user ha
+sudo kiosk-backlight-uninstall-service
 ```
+
+Install metadata is stored in the clone directory at `~/.kiosk-backlight/.kiosk-backlight-install.env` and ignored by git.
 
 ## Dev Container
 

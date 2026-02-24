@@ -28,6 +28,7 @@ coverage/
 tmp/
 .tmp/
 *.pid
+.kiosk-backlight-install.env
 
 # Local overrides (keep config/kiosk-backlight.env tracked)
 # If you create per-device configs, keep them out of git
