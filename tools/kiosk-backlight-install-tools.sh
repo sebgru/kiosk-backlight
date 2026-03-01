@@ -43,11 +43,14 @@ IDLE_LIMIT=20
 # How often to poll for idle timeout checks (seconds):
 POLL_INTERVAL=1
 
-# How long to swallow input after wake (milliseconds):
-WAKE_SWALLOW_MS=250
+# How long to suppress touch after wake (milliseconds):
+WAKE_SUPPRESS_MS=200
 
 # Optional: explicitly set the backlight bl_power node:
 # BACKLIGHT_BL_POWER=/sys/class/backlight/rpi_backlight/bl_power
+
+# Optional: grep (case-insensitive) for touch device names from xinput:
+# TOUCH_GREP=touch
 EOF
 }
 
@@ -85,7 +88,7 @@ fi
 REPO_OWNER="${KIOSK_BACKLIGHT_REPO_OWNER:-$(stat -c '%U' "$SOURCE_REPO_DIR")}"
 
 missing=()
-for pkg in evtest git ca-certificates; do
+for pkg in xinput xprintidle git ca-certificates; do
   if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q 'install ok installed'; then
     missing+=("$pkg")
   fi

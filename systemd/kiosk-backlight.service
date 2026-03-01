@@ -1,5 +1,5 @@
 [Unit]
-Description=Kiosk backlight idle controller (evdev + swallow)
+Description=Kiosk backlight idle controller (X11 xprintidle + xinput)
 After=multi-user.target
 
 [Service]

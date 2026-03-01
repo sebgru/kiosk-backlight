@@ -9,9 +9,9 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 
 ## Features
 
-- Backlight off after idle (uses `/dev/input/event*` activity via `evtest`)
+- Backlight off after idle (uses X11 idle time via `xprintidle`)
 - Backlight on when activity resumes
-- Optional input swallow window after wake
+- Optional touch suppression window after wake (via `xinput disable/enable`)
 - systemd **system** service
 - Configurable via `/etc/kiosk-backlight.env`
 
@@ -19,7 +19,8 @@ Designed for low-resource Raspberry Pi kiosk devices (e.g., Pi Zero 2 W) and ins
 
 Runtime packages (Debian/Raspberry Pi OS):
 
-- `evtest`
+- `xinput`
+- `xprintidle`
 - `git`
 - `ca-certificates` (for HTTPS git clones)
 
@@ -37,7 +38,7 @@ Install is split into three steps:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y evtest git ca-certificates
+sudo apt-get install -y xinput xprintidle git ca-certificates
 curl -fsSL https://raw.githubusercontent.com/sebgru/kiosk-backlight/master/install.sh | bash
 sudo ~/.kiosk-backlight/tools/kiosk-backlight-install-tools.sh
 sudo kiosk-backlight-install-service
@@ -148,9 +149,10 @@ The script loads config in this order (later wins):
 Common settings:
 
 - `IDLE_LIMIT=20` (seconds)
-- `WAKE_SWALLOW_MS=250` (milliseconds)
+- `WAKE_SUPPRESS_MS=200` (milliseconds)
 - `POLL_INTERVAL=1` (seconds)
 - `BACKLIGHT_BL_POWER=/sys/class/backlight/.../bl_power` (optional override)
+- `TOUCH_GREP=touch` (optional `xinput` device-name filter)
 
 After editing config:
 

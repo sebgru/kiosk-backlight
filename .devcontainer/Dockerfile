@@ -8,5 +8,6 @@ RUN apt-get update \
   vim \
   x11-xserver-utils \
   xprintidle \
+  xinput \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

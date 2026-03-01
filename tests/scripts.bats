@@ -97,6 +97,19 @@ setup() {
   [ "$status" -eq 1 ]
 }
 
+@test "kiosk-backlight.sh fails fast when xprintidle is missing" {
+  tmpbin="$(mktemp -d)"
+  mkdir -p "$BATS_TEST_TMPDIR/home"
+  bl_power="$(mktemp)"
+  echo 0 >"$bl_power"
+
+  run env PATH="$tmpbin" HOME="$BATS_TEST_TMPDIR/home" BACKLIGHT_BL_POWER="$bl_power" \
+    /usr/bin/bash "$PROJECT_ROOT/kiosk-backlight.sh"
+
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"xprintidle not found"* ]]
+}
+
 @test "kiosk-backlight-check-update fails when metadata is missing" {
   missing_meta="$BATS_TEST_TMPDIR/does-not-exist.env"
 
